@@ -7,6 +7,7 @@ package main
 08 Jan 2020 - png gif support - jokes overlay
 09 Jan 2020 - JSON code
 10 Jan 2020 - AdGenerator
+11 Jan 2020 - shuffle
 */
 
 import (
@@ -205,7 +206,6 @@ func GetAdvert(id int) string {
 	return `<div onclick="fakead('/api/line/` + strconv.Itoa(id) + `')" style="cursor: pointer; border-style: dashed; font-family: arial; font-size: 120%; text-align: center;">` + msg + `</div><br />`
 }
 
-//
 var UsedAds = map[int]bool{}
 
 type Advert struct {
@@ -234,7 +234,7 @@ func AdGenerator(theAarray []Advert) int {
 			for k := range UsedAds {
 				delete(UsedAds, k)
 			}
-			fmt.Printf("%v All used up - reset %v\n", id, UsedAds)
+			//fmt.Printf("%v All used up - reset %v\n", id, UsedAds)
 		} else if !UsedAds[id] {
 			break
 		} // for loop
@@ -242,7 +242,7 @@ func AdGenerator(theAarray []Advert) int {
 	//while (UsedAds.includes(id)); // that id is not in there - get it
 	UsedAds[id] = true
 	//UsedAds.push(id);
-	fmt.Printf("%v AdGenerator2 %v\n", id, UsedAds)
+	//fmt.Printf("%v AdGenerator2 %v\n", id, UsedAds)
 	//return `<div onclick="fakead('/api/line/${AdAarray[id].id}')" style="cursor: pointer; border-style: dashed; font-family: arial; font-size: 120%; text-align: center;">${msg}</div><br />`;
 	return id
 }
@@ -307,13 +307,6 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		post.Pithy = pithy
 		post.Author = author
 
-		if (i % 3) == 0 {
-			choosen := myAdverts[AdGenerator(myAdverts)]
-			post.Advert = `<div onclick="fakead('/api/line/` + strconv.Itoa(choosen.id) + `')" style="cursor: pointer; border-style: dashed; font-family: arial; font-size: 120%; text-align: center;">` + choosen.msg + `</div><br />`
-		} else {
-			post.Advert = ""
-		}
-
 		if _, err := os.Stat("./images/" + strconv.Itoa(id) + ".jpg"); !os.IsNotExist(err) {
 			post.Image = true
 		} else {
@@ -321,11 +314,11 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		}
 		post.Login = CheckCookies(r)
 
-		if (i % 2) == 0 {
+		/*if (i % 2) == 0 {
 			post.Bgc = "#eeeecc"
 		} else {
 			post.Bgc = "#cceeee"
-		}
+		}*/
 		res = append(res, post)
 		i = i + 1
 	}
@@ -337,6 +330,22 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		head.LoginTag = `<a href="/logout">LOGOUT</a>&nbsp; &nbsp; <a href="/api/edit/0"> NEW POST</a>`
 	}
 
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(res), func(i, j int) { res[i], res[j] = res[j], res[i] })
+
+	for i = 0; i < len(res); i++ {
+		if (i % 2) == 0 {
+			res[i].Bgc = "#eeeecc"
+		} else {
+			res[i].Bgc = "#cceeee"
+		}
+		if (i % 3) == 0 {
+			choosen := myAdverts[AdGenerator(myAdverts)]
+			res[i].Advert = `<div onclick="fakead('/api/line/` + strconv.Itoa(choosen.id) + `')" style="cursor: pointer; border-style: dashed; font-family: arial; font-size: 120%; text-align: center;">` + choosen.msg + `</div><br />`
+		} else {
+			res[i].Advert = ""
+		}
+	}
 	tmpl.ExecuteTemplate(w, "Header", head)
 	tmpl.ExecuteTemplate(w, "Index", res)
 	tmpl.ExecuteTemplate(w, "Footer", BuildTags(true))
