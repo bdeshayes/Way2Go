@@ -1,0 +1,36 @@
+{
+  "name": "crassorpithy",
+  "version": "2.0.0",
+  "description": "Crass or Pithy?",
+  "engines": {
+    "node": "12.2.0"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "child_process": "^1.0.2",
+    "cookie-parser": "^1.4.4",
+    "cors": "^2.8.5",
+    "ejs": "^2.6.1",
+    "escape-quotes": "^1.0.2",
+    "express": "^4.15.3",
+    "express-fileupload": "^1.1.4",
+    "express-session": "^1.16.1",
+    "fetch": "^1.1.0",
+    "form-data": "^2.4.0",
+    "fs": "0.0.1-security",
+    "fs-extra": "^8.0.1",
+    "jimp": "^0.8.5",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0",
+    "password-hash": "^1.2.2",
+    "sqlite": "^3.0.3",
+    "striptags": "^3.1.1"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Bruno Deshayes",
+  "license": "ISC"
+}
