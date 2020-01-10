@@ -1,0 +1,32 @@
+{{ define "Index" }}
+
+	{{ range . }}
+	
+	{{ .Advert }}
+	
+	<a id="{{ .Id }}"></a>
+	<div style="background-color: {{ .Bgc }}; overflow: auto; border-radius: 25px; padding: 20px;"><h2 style="font-family: arial; ">
+	<a href="/api/crass/{{ .Id }}" class="crass"><span>&#x1f641; crass</span><span class="badge">{{ .Crass }}</span></a>
+	&nbsp; &nbsp;
+	<a href="/api/pithy/{{ .Id }}" class="pithy"><span>&#x1f642; pithy</span><span class="badge">{{ .Pithy }}</span></a>
+
+	{{if .Login }}
+	&nbsp; &nbsp; <a style="font-family: arial; text-decoration: none; background-color: #00FF00; color: #FFFFFF; font-size: 120%; padding: 2px 6px 2px 6px;" href="/api/edit/{{ .Id }}">edit</a>
+	{{ end }}
+	
+	&nbsp; &nbsp; {{ .Title }}</h2>
+
+	{{if .Image }}
+	<img class="postimage" src="/images/{{ .Id }}.jpg" />
+	{{ end }}
+	
+	<p style="font-family: times">
+	<a target="_blank" href="{{ .Url }}">source</a> &nbsp;
+
+	{{ .Body }}</p>
+	
+	{{ .Tags}}
+	</div><br />
+	{{ end }}
+	
+{{ end }}

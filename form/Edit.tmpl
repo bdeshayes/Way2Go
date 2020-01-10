@@ -1,0 +1,29 @@
+{{ define "Edit" }}
+  {{ template "Header" }}
+		
+		<form name="myform" action="/api/edit" method="post" enctype="multipart/form-data">
+		<div  id="tablehead" >
+		<h2>Editing a post with crass or pithy</h2>
+		<input type="hidden" name="id" value="{{ .Id }}"/>
+		<table id="Schlumpf" border=1>
+		<tr><td>Title</td><td><input type="text" name="title" size="70" value="{{ .Title }}"/></td></tr>
+		<tr><td>URL</td><td><input type="text" name="url" size="70" value="{{ .Url }}"/></td></tr>
+		<tr><td>Body</td><td><textarea name="body" rows="20" cols="50">{{ .Body }}</textarea></td></tr>
+		<tr><td>crass score</td><td><input type="text" name="crass" value="{{ .Crass }}"/></td></tr>
+		<tr><td>pithy score</td><td><input type="text" name="pithy" value="{{ .Pithy }}"/></td></tr>
+		<tr><td>tags</td><td><input type="text" name="tags" value="{{ .Tags }}"/>{{ .Tlu }}</td></tr>
+		<tr><td>*.jpg file upload</td><td><input type="file" name="foo" /></td></tr>
+
+	
+		{{if .Image }}
+		<tr><td colspan=2><a title="click on image to delete it" OnClick="return confirm('Are you sure you want to delete this image?');" href="/api/delimg/{{ .Id }}"><img style="width: 200px" src="/images/{{ .Id }}.jpg" /></a></td></tr>
+		{{ end }}
+	
+		<tr><td colspan=2>
+		<input type="submit" OnClick="return confirm('Are you sure you want to delete this post?');" name="button" value="delete" /> &nbsp; &nbsp;
+		<input type="submit" name="button" value="save" /></td></tr>
+		</table>
+		</div></form>
+
+
+{{ end }}
