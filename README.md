@@ -1,11 +1,7 @@
-{::options parse_block_html="true" /}
+# Way2Go</h1>
 
-<i>I like big speakers</i>
-<br />
-<h1>Way2Go</h1>
+same blog webserver ported from **node.js** to **go**
 
-<h2>same blog webserver ported from <b>node.js</b> to <b>go</b>
-</h2>
 
 
 ![Screenshot](screen.png)
