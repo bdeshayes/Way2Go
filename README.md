@@ -1,6 +1,6 @@
 {::options parse_block_html="true" /}
 
-<i><I like big speakers</i>
+<i>I like big speakers</i>
 <br />
 <h1>Way2Go</h1>
 
