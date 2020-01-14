@@ -13,6 +13,8 @@ produces a line break.
 Text attributes _italic_, 
 **bold**, `monospace`.
 
+## hash something
+
 Horizontal rule:
 
 ---
