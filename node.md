@@ -1,9 +1,8 @@
 
-## CrassOrPithy ##  
-
+CrassOrPithy
+============
 This is a fully fledged webserver application written in node.js with express routing and SQLite database.
 It is part of my **Way2Go** repository where we compare the **same app ported from node.js to golang**
----
 
 **function DoHeader(myTitle, jokesarray, req)**  
 This is a templating function to build the top of the webpage
