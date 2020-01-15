@@ -17,7 +17,7 @@ CheckCredentials validates user login
 **func AdGenerator(theAarray []Advert) int**  
 inserts random adverts before each post
 
-**func Index(w http.ResponseWriter, r http.Request)**  
+**func Index(w http.ResponseWriter, r \*http.Request)**  
 Index - the main blog builder: posts interspersed with adverts  
 does both the whole homepage or posts limited to a given tag
 
