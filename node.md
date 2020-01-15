@@ -23,7 +23,7 @@ templating function to build the html code for an individual post
 **app.get('/api/login', async (req, res, next)**  
 endpoint for user login - serves the html form
 
-**app.post('/api/login', **  
+**app.post('/api/login',**  
 endpoint for user login thru passport authentication
 stores credentials in session cookies
 
