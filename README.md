@@ -13,16 +13,5 @@ Go is a typed language - so if you come from PHP you will have to differentiate 
 
 Go has its own idiosyncrasies - try to build some **JSON** data for instance - it is quite ugly but so straightforward in node/javascript (!)
 
-<a name="DoHeader"></a>
+[go documentation](go.md)
 
-## DoHeader(myTitle, jokesarray, req) ⇒ <code>string</code>
-Templating the top of the website
-
-**Kind**: global function  
-**Returns**: <code>string</code> - html fragment  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| myTitle | <code>string</code> | myTitle |
-| jokesarray | <code>array</code> | jokesarray |
-| req | <code>object</code> | req (not used) |
