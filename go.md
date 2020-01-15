@@ -24,7 +24,7 @@ does both the whole homepage or posts limited to a given tag
 **func Show(w http.ResponseWriter, r http.Request)**  
 Show displays a single post
 
-**func Edit(w http.ResponseWriter, r http.Request) **  
+**func Edit(w http.ResponseWriter, r http.Request)**  
 Edit - the dialog form to create/modify/delete a post
 
 **func Posting(w http.ResponseWriter, r http.Request)**  
