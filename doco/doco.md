@@ -14,10 +14,5 @@ To keep in the spirit of my **Way2Go** repository where we compare the **same ap
 this utility also exists in node.js under doco.js
 
 
-**func substr(input string, start int, length int) string**
+**func substr(input string, start int, length int) string**  
 Go doesn't have substr so we make our own...
-" {
-			//fmt.Println("open comment")
-			comment = true
-			k = k + 3
-		} else if substr(str, k, 2) == "
