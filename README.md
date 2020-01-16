@@ -4,7 +4,8 @@ This is the same blog webserver ported from **node.js** to **go** Both versions 
 
 Give it a spin...
 -----------------
-Click on the green button above "Clone or download" and unpack Way2Go-master.zip on your Windows PC. Now run Way2Go.exe, enable the windows firewall dialog to run a local webserver on your machine and type this url in your browser http://localhost:8080 Voila!
+Click on the green button above "Clone or download" and unpack Way2Go-master.zip on your Windows PC. Now run Way2Go.exe, enable the windows firewall dialog to run a local webserver on your machine and type this url in your browser http://localhost:8080 Voila!  
+(If you want to go into the admin part and edit the posts the login is daffy/mos587)
  
 You can't bluntly rewrite code from one programming language to another because different languages use different libraries. (Mind you some people have tried to craft some parsers in the past to cope with differences in syntax but they failed for the above reason.)
 
