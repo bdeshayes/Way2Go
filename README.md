@@ -2,7 +2,7 @@
 
 This is the same blog webserver ported from **node.js** to **go** Both versions side-by-side sharing the same database **(SQLite)** and the same static files.
 
-Give it a snip...
+Give it a spin...
 -----------------
 Click on the green button above "Clone or download" and unpack Way2Go-master.zip on your Windows PC. Now run Way2Go.exe, enable the windows firewall dialog to run a local webserver on your machine and type this url in your browser http://localhost:8080 Voila!
  
