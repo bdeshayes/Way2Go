@@ -24,7 +24,7 @@ import (
 	"path/filepath"
 )
 /**
-**func substr(input string, start int, length int) string**
+**func substr(input string, start int, length int) string**  
 Go doesn't have substr so we make our own...
 */
 func substr(input string, start int, length int) string {
