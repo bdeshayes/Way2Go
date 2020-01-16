@@ -1,0 +1,27 @@
+BEGIN TRANSACTION;
+DROP TABLE IF EXISTS "jokes";
+CREATE TABLE IF NOT EXISTS "jokes" (
+	"id"	INTEGER NOT NULL,
+	"text"	TEXT NOT NULL,
+	PRIMARY KEY("id")
+);
+DROP TABLE IF EXISTS "oneliners";
+CREATE TABLE IF NOT EXISTS "oneliners" (
+	"id"	INTEGER NOT NULL,
+	"msg"	TEXT NOT NULL,
+	"part2"	TEXT DEFAULT '',
+	PRIMARY KEY("id")
+);
+DROP TABLE IF EXISTS "posts";
+CREATE TABLE IF NOT EXISTS "posts" (
+	"id"	INTEGER NOT NULL,
+	"title"	TEXT NOT NULL,
+	"body"	TEXT NOT NULL,
+	"tags"	TEXT DEFAULT '',
+	"url"	TEXT,
+	"crass"	INTEGER DEFAULT 0,
+	"pithy"	INTEGER DEFAULT 0,
+	"author"	TEXT DEFAULT 'rss',
+	PRIMARY KEY("id")
+);
+COMMIT;
