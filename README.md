@@ -13,5 +13,7 @@ Go is a typed language - so if you come from PHP you will have to differentiate 
 
 Go has its own idiosyncrasies - try to build some **JSON** data for instance - it is quite ugly but so straightforward in node/javascript (!)
 
-[node documentation](node.md)   [go documentation](go.md)
+[node documentation](node.md)
+
+[go documentation](go.md)
 
