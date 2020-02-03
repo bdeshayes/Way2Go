@@ -1,14 +1,29 @@
-package main
+/**
+Way2Go
+============
+This is a fully fledged webserver application written in golang with gorilla/mux routing and SQLite database.
+It is part of my **Way2Go** repository where we compare the **same app ported from node.js to golang**
 
-/*
-04 Jan 2020 - implemented gorilla/mux to have same routes as the node.js implementation
-06 Jan 2020 - a lot of mucking around to implement edit form
-07 Jan 2020 - admin login for edits - session cookies via gorilla mux
-08 Jan 2020 - png gif support - jokes overlay
-09 Jan 2020 - JSON code
-10 Jan 2020 - AdGenerator
-11 Jan 2020 - shuffle
 */
+/*
+Package Way2Go is an example package with documentation
+
+	04 Jan 2020 - implemented gorilla/mux to have same routes as the node.js implementation
+	06 Jan 2020 - a lot of mucking around to implement edit form
+	07 Jan 2020 - admin login for edits - session cookies via gorilla mux
+	08 Jan 2020 - png gif support - jokes overlay
+	09 Jan 2020 - JSON code
+	10 Jan 2020 - AdGenerator
+	11 Jan 2020 - shuffle
+	12 Jan 2020 - todo check ads in tags - randon crass/pithy ratings
+	14 Jan 2020 - merged Index and Tag into one
+	functions by alphabetic order (only if starts with a capital letter)
+	types ditto
+
+	C:\Way2Go>godocdown >go.md to buid the doco
+
+*/
+package main
 
 import (
 	"database/sql"
@@ -32,6 +47,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
 	_ "github.com/mattn/go-sqlite3"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Post struct {
@@ -67,7 +83,7 @@ func dbConn() (db *sql.DB) {
 	return db
 }
 
-var tmpl = template.Must(template.ParseGlob("form/*"))
+var tmpl = template.New("name")
 
 // cookie handling
 
@@ -75,7 +91,11 @@ var cookieHandler = securecookie.New(
 	securecookie.GenerateRandomKey(64),
 	securecookie.GenerateRandomKey(32))
 
-func getCredentials(request *http.Request) (username string, password string) {
+/**
+**func GetCredentials(request http.Request) (username string, password string)**
+GetCredentials returns login data from session cookie
+*/
+func GetCredentials(request *http.Request) (username string, password string) {
 	if cookie, err := request.Cookie("session"); err == nil {
 		cookieValue := make(map[string]string)
 		if err = cookieHandler.Decode("session", cookie.Value, &cookieValue); err == nil {
@@ -112,16 +132,19 @@ func clearSession(response http.ResponseWriter) {
 	http.SetCookie(response, cookie)
 }
 
-func AppendIfMissing(slice []string, s string) []string {
+func appendIfMissing(slice []string, s string) []string {
 	for _, ele := range slice {
 		if ele == s {
 			return slice
 		}
 	}
-	//log.Println("adding " + s)
 	return append(slice, s)
 }
 
+/**
+**func BuildTags(html bool) string**
+Generates html buttons for each unique tag across the whole blog
+*/
 func BuildTags(html bool) string {
 	db := dbConn()
 	selDB, err := db.Query("SELECT tags FROM Posts")
@@ -143,7 +166,7 @@ func BuildTags(html bool) string {
 		var splits = strings.Split(mytags, ",")
 
 		for _, value := range splits {
-			tags = AppendIfMissing(tags, value)
+			tags = appendIfMissing(tags, value)
 		}
 	}
 	sort.Strings(tags)
@@ -168,15 +191,30 @@ func BuildTags(html bool) string {
 	return retval
 }
 
-func CheckCookies(r *http.Request) bool {
-	username, password := getCredentials(r)
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
+}
 
-	if (username == "daffy") && (password == "mos587") {
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
+}
+
+/**
+**func CheckCredentials(r http.Request) bool**
+CheckCredentials validates user login
+*/
+func CheckCredentials(r *http.Request) bool {
+	username, password := GetCredentials(r)
+	hash := "$2a$04$ouWVYXaVo0N/vnB0BH9uUeNSho6qxNh25wixQ8cw5K3Wp3WUDZ5A6"
+	if (username == "daffy") && CheckPasswordHash(password, hash) {
 		return true
 	} else {
 		return false
 	}
 }
+
 func GetNextJokeId() int {
 	var id int
 	db := dbConn()
@@ -214,6 +252,10 @@ type Advert struct {
 	part2 string
 }
 
+/**
+**func AdGenerator(theAarray []Advert) int**
+inserts random adverts before each post
+*/
 func AdGenerator(theAarray []Advert) int {
 	id := 1
 
@@ -247,7 +289,11 @@ func AdGenerator(theAarray []Advert) int {
 	return id
 }
 
-//
+/**
+**func Index(w http.ResponseWriter, r \*http.Request)**
+Index - the main blog builder: posts interspersed with adverts
+does both the whole homepage or posts limited to a given tag
+*/
 func Index(w http.ResponseWriter, r *http.Request) {
 	db := dbConn()
 	rand.Seed(time.Now().UTC().UnixNano())
@@ -273,12 +319,21 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		myAdverts = append(myAdverts, theAdvert)
 	}
 
-	selDB, err = db.Query("SELECT * FROM Posts ORDER BY id DESC")
+	var query string
+	vars := mux.Vars(r)
+	if len(vars) == 0 {
+		query = "SELECT * FROM Posts ORDER BY id DESC"
+	} else {
+		query = "SELECT * FROM Posts where tags like '%" + vars["tag"] + "%' ORDER BY id DESC"
+	}
+
+	post := Post{}
+	res := []Post{}
+
+	selDB, err = db.Query(query)
 	if err != nil {
 		panic(err.Error())
 	}
-	post := Post{}
-	res := []Post{}
 
 	var i = 0
 	for selDB.Next() {
@@ -312,13 +367,8 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		} else {
 			post.Image = false
 		}
-		post.Login = CheckCookies(r)
+		post.Login = CheckCredentials(r)
 
-		/*if (i % 2) == 0 {
-			post.Bgc = "#eeeecc"
-		} else {
-			post.Bgc = "#cceeee"
-		}*/
 		res = append(res, post)
 		i = i + 1
 	}
@@ -330,21 +380,160 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		head.LoginTag = `<a href="/logout">LOGOUT</a>&nbsp; &nbsp; <a href="/api/edit/0"> NEW POST</a>`
 	}
 
-	rand.Seed(time.Now().UnixNano())
-	rand.Shuffle(len(res), func(i, j int) { res[i], res[j] = res[j], res[i] })
+	if !CheckCredentials(r) {
+		rand.Seed(time.Now().UnixNano())
+		rand.Shuffle(len(res), func(i, j int) { res[i], res[j] = res[j], res[i] })
 
+		for k := range UsedAds {
+			delete(UsedAds, k)
+		}
+		for i = 0; i < len(res); i++ {
+			if (i % 2) == 0 {
+				res[i].Bgc = "#eeeecc"
+			} else {
+				res[i].Bgc = "#cceeee"
+			}
+			if (i % 3) == 0 {
+				choosen := myAdverts[AdGenerator(myAdverts)]
+				res[i].Advert = `<div onclick="fakead('/api/line/` + strconv.Itoa(choosen.id) + `')" style="cursor: pointer; border-style: dashed; font-family: arial; font-size: 120%; text-align: center;">` + choosen.msg + `</div><br />`
+			} else {
+				res[i].Advert = ""
+			}
+		}
+	} else {
+		for i = 0; i < len(res); i++ {
+			if (i % 2) == 0 {
+				res[i].Bgc = "#eeeecc"
+			} else {
+				res[i].Bgc = "#cceeee"
+			}
+		}
+	}
+	tmpl.ExecuteTemplate(w, "Header", head)
+	tmpl.ExecuteTemplate(w, "Index", res)
+	tmpl.ExecuteTemplate(w, "Footer", BuildTags(true))
+	defer db.Close()
+}
+
+/**
+**func Sort(w http.ResponseWriter, r \*http.Request)**
+Index - the main blog builder: posts interspersed with adverts
+does posts sorted by crass or pithy scores
+*/
+func Sort(w http.ResponseWriter, r *http.Request) {
+	db := dbConn()
+	rand.Seed(time.Now().UTC().UnixNano())
+
+	theAdvert := Advert{}
+	myAdverts := []Advert{}
+
+	selDB, err := db.Query("SELECT * FROM oneliners")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for selDB.Next() {
+		var id int
+		var msg, part2 string
+		err = selDB.Scan(&id, &msg, &part2)
+		if err != nil {
+			panic(err.Error())
+		}
+		theAdvert.id = id
+		theAdvert.msg = msg
+		theAdvert.part2 = part2
+		myAdverts = append(myAdverts, theAdvert)
+	}
+
+	var query string
+	vars := mux.Vars(r)
+	if len(vars) == 0 {
+		query = "SELECT * FROM Posts ORDER BY id DESC"
+	} else {
+		query = "SELECT * FROM Posts ORDER BY " + vars["score"] + " DESC"
+	}
+
+	post := Post{}
+	res := []Post{}
+
+	selDB, err = db.Query(query)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	var i = 0
+	for selDB.Next() {
+		var id, crass, pithy int
+		var title, body, tags, url, author string
+		err = selDB.Scan(&id, &title, &body, &tags, &url, &crass, &pithy, &author)
+		if err != nil {
+			panic(err.Error())
+		}
+		post.Id = id
+		post.Title = title
+		post.Body = strings.Replace(body, "\n", "<br />", -1)
+
+		// need to handle <!--more-->
+		//mybody = mybody.replace(/<!--more-->.*$/s, `<br /><a href="/api/view/${post.id}">view more</a>`);
+		re := regexp.MustCompile(`<!--more-->.*$`)
+		post.Body = re.ReplaceAllString(post.Body, `<br /><a href="/api/view/`+strconv.Itoa(id)+`">view more</a>`)
+
+		var splits = strings.Split(tags, ",")
+		post.Tags = ""
+		for _, value := range splits {
+			post.Tags = post.Tags + `<a class="taglink" href="/tag/` + value + `">` + value + "</a> &nbsp;"
+		}
+		post.Url = url
+		post.Crass = crass
+		post.Pithy = pithy
+		post.Author = author
+
+		if _, err := os.Stat("./images/" + strconv.Itoa(id) + ".jpg"); !os.IsNotExist(err) {
+			post.Image = true
+		} else {
+			post.Image = false
+		}
+		post.Login = CheckCredentials(r)
+
+		res = append(res, post)
+		i = i + 1
+	}
+	head := Head{}
+	head.NextJokeId = GetNextJokeId()
+
+	head.LoginTag = `<a href="/login">LOGIN</a>`
+	if post.Login {
+		head.LoginTag = `<a href="/logout">LOGOUT</a>&nbsp; &nbsp; <a href="/api/edit/0"> NEW POST</a>`
+	}
+
+	/*if !CheckCredentials(r) {
+		rand.Seed(time.Now().UnixNano())
+		rand.Shuffle(len(res), func(i, j int) { res[i], res[j] = res[j], res[i] })
+
+		for k := range UsedAds {
+			delete(UsedAds, k)
+		}
+		for i = 0; i < len(res); i++ {
+			if (i % 2) == 0 {
+				res[i].Bgc = "#eeeecc"
+			} else {
+				res[i].Bgc = "#cceeee"
+			}
+			if (i % 3) == 0 {
+				choosen := myAdverts[AdGenerator(myAdverts)]
+				res[i].Advert = `<div onclick="fakead('/api/line/` + strconv.Itoa(choosen.id) + `')" style="cursor: pointer; border-style: dashed; font-family: arial; font-size: 120%; text-align: center;">` + choosen.msg + `</div><br />`
+			} else {
+				res[i].Advert = ""
+			}
+		}
+	} else {*/
 	for i = 0; i < len(res); i++ {
 		if (i % 2) == 0 {
 			res[i].Bgc = "#eeeecc"
 		} else {
 			res[i].Bgc = "#cceeee"
 		}
-		if (i % 3) == 0 {
-			choosen := myAdverts[AdGenerator(myAdverts)]
-			res[i].Advert = `<div onclick="fakead('/api/line/` + strconv.Itoa(choosen.id) + `')" style="cursor: pointer; border-style: dashed; font-family: arial; font-size: 120%; text-align: center;">` + choosen.msg + `</div><br />`
-		} else {
-			res[i].Advert = ""
-		}
+		//}
 	}
 	tmpl.ExecuteTemplate(w, "Header", head)
 	tmpl.ExecuteTemplate(w, "Index", res)
@@ -352,73 +541,10 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 }
 
-func Tag(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	tag := vars["tag"]
-
-	db := dbConn()
-	selDB, err := db.Query("SELECT * FROM Posts where tags like '%" + tag + "%' ORDER BY id DESC")
-	if err != nil {
-		panic(err.Error())
-	}
-	post := Post{}
-	res := []Post{}
-
-	var i = 0
-	for selDB.Next() {
-		var id, crass, pithy int
-		var title, body, tags, url, author string
-		err = selDB.Scan(&id, &title, &body, &tags, &url, &crass, &pithy, &author)
-		if err != nil {
-			panic(err.Error())
-		}
-		post.Id = id
-		post.Title = title
-		post.Body = strings.Replace(body, "\n", "<br />", -1)
-
-		// need to handle <!--more-->
-		//mybody = mybody.replace(/<!--more-->.*$/s, `<br /><a href="/api/view/${post.id}">view more</a>`);
-		re := regexp.MustCompile(`<!--more-->.*$`)
-		post.Body = re.ReplaceAllString(post.Body, `<br /><a href="/api/view/`+strconv.Itoa(id)+`">view more</a>`)
-
-		var splits = strings.Split(tags, ",")
-		post.Tags = ""
-		for _, value := range splits {
-			post.Tags = post.Tags + `<a class="taglink" href="/tag/` + value + `">` + value + "</a> &nbsp;"
-		}
-		post.Url = url
-		post.Crass = crass
-		post.Pithy = pithy
-		post.Author = author
-		post.Login = CheckCookies(r)
-
-		if _, err := os.Stat("./images/" + strconv.Itoa(id) + ".jpg"); !os.IsNotExist(err) {
-			post.Image = true
-		} else {
-			post.Image = false
-		}
-		if (i % 2) == 0 {
-			post.Bgc = "#eeeecc"
-		} else {
-			post.Bgc = "#cceeee"
-		}
-		res = append(res, post)
-		i = i + 1
-	}
-	head := Head{}
-	head.NextJokeId = GetNextJokeId()
-
-	head.LoginTag = `<a href="/login">LOGIN</a>`
-	if post.Login {
-		head.LoginTag = `<a href="/logout">LOGOUT</a>&nbsp; &nbsp; <a href="/api/edit/0"> NEW POST</a>`
-	}
-
-	tmpl.ExecuteTemplate(w, "Header", head)
-	tmpl.ExecuteTemplate(w, "Index", res)
-	tmpl.ExecuteTemplate(w, "Footer", BuildTags(true))
-	defer db.Close()
-}
-
+/**
+**func Show(w http.ResponseWriter, r \*http.Request)**
+Show displays a single post
+*/
 func Show(w http.ResponseWriter, r *http.Request) {
 	db := dbConn()
 	//nId := r.URL.Query().Get("id")
@@ -456,7 +582,7 @@ func Show(w http.ResponseWriter, r *http.Request) {
 			post.Image = false
 		}
 	}
-	post.Login = CheckCookies(r)
+	post.Login = CheckCredentials(r)
 	head := Head{}
 	head.NextJokeId = GetNextJokeId()
 
@@ -471,6 +597,10 @@ func Show(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 }
 
+/**
+**func Edit(w http.ResponseWriter, r \*http.Request)**
+Edit - the dialog form to create/modify/delete a post
+*/
 func Edit(w http.ResponseWriter, r *http.Request) {
 	db := dbConn()
 	vars := mux.Vars(r)
@@ -512,6 +642,10 @@ func Edit(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 }
 
+/**
+**func Posting(w http.ResponseWriter, r \*http.Request)**
+Posting - processes the form data to create/modify/delete a post
+*/
 func Posting(w http.ResponseWriter, r *http.Request) {
 	db := dbConn()
 	if r.Method == "POST" {
@@ -602,6 +736,10 @@ func Posting(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", 301)
 }
 
+/**
+**func Crass(w http.ResponseWriter, r \*http.Request)**
+Crass increments the crass score of the blog post
+*/
 func Crass(w http.ResponseWriter, r *http.Request) {
 	db := dbConn()
 	vars := mux.Vars(r)
@@ -616,6 +754,10 @@ func Crass(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/#"+nId, 301)
 }
 
+/**
+**func Pithy(w http.ResponseWriter, r \*http.Request)**
+Pithy increments the pithy score of the blog post
+*/
 func Pithy(w http.ResponseWriter, r *http.Request) {
 	db := dbConn()
 	vars := mux.Vars(r)
@@ -630,6 +772,10 @@ func Pithy(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/#"+nId, 301)
 }
 
+/**
+**func NextJoke(w http.ResponseWriter, r \*http.Request)**
+NextJoke generates the data for the html message overlay
+*/
 func NextJoke(w http.ResponseWriter, r *http.Request) {
 	db := dbConn()
 	vars := mux.Vars(r)
@@ -661,6 +807,10 @@ func NextJoke(w http.ResponseWriter, r *http.Request) {
 	tmpl.ExecuteTemplate(w, "Joke", joke)
 }
 
+/**
+**func JsonLine(w http.ResponseWriter, r \*http.Request)**
+JsonLine serves the data needed when the user clicks on an advert
+*/
 func JsonLine(w http.ResponseWriter, r *http.Request) {
 	db := dbConn()
 	nId := mux.Vars(r)["id"]
@@ -689,6 +839,10 @@ func JsonLine(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(myline)
 }
 
+/**
+**func DeleteImage(w http.ResponseWriter, r \*http.Request)**
+You may delete an image while keeping the post itself
+*/
 func DeleteImage(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -702,10 +856,18 @@ func DeleteImage(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/api/view/"+id, 301)
 }
 
+/**
+**func Login(w http.ResponseWriter, r \*http.Request)**
+Login displays the login form dialog
+*/
 func Login(w http.ResponseWriter, r *http.Request) {
 	tmpl.ExecuteTemplate(w, "Login", "welcome")
 }
 
+/**
+**func UserLogsIn(w http.ResponseWriter, r \*http.Request)**
+UserLogsIn creates a session **more work here** if user credentials fail
+*/
 func UserLogsIn(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
 	password := r.FormValue("password")
@@ -720,24 +882,45 @@ func UserLogsOut(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", 302)
 }
 
-func main() {
-	var port = ":8080"
-	router := mux.NewRouter().StrictSlash(true)
-	router.PathPrefix("/images/").Handler(http.StripPrefix("/images/", http.FileServer(http.Dir("images/"))))
-	router.HandleFunc("/", Index).Methods("GET")
-	router.HandleFunc("/api/view/{id}", Show).Methods("GET")
-	router.HandleFunc("/tag/{tag}", Tag).Methods("GET")
-	router.HandleFunc("/api/edit/{id}", Edit).Methods("GET")
-	router.HandleFunc("/api/crass/{id}", Crass).Methods("GET")
-	router.HandleFunc("/api/pithy/{id}", Pithy).Methods("GET")
-	router.HandleFunc("/api/nextjoke/{id}", NextJoke).Methods("GET")
-	router.HandleFunc("/api/line/{id}", JsonLine).Methods("GET")
-	router.HandleFunc("/api/edit", Posting).Methods("POST")
-	router.HandleFunc("/api/delimg/{id}", DeleteImage).Methods("GET")
-	router.HandleFunc("/logout", UserLogsOut).Methods("GET")
-	router.HandleFunc("/login", Login).Methods("GET")
-	router.HandleFunc("/login", UserLogsIn).Methods("POST")
+// Exists reports whether the named file or directory exists.
+func Exists(name string) bool {
+	if _, err := os.Stat(name); err != nil {
+		if os.IsNotExist(err) {
+			fmt.Println(name + " is missing")
+			return false
+		}
+	}
+	return true
+}
 
-	http.Handle("/", router)
-	log.Fatal(http.ListenAndServe(port, router))
+/**
+**func main()**
+main is the entry point which holds dispatches for all the url routes
+*/
+func main() {
+	// check our assets exists
+	if Exists("./CorP.sqlite") && Exists("./images") && Exists("./form") {
+		tmpl = template.Must(template.ParseGlob("form/*"))
+		var port = ":8080"
+		fmt.Println("Server listening on http://localhost" + port)
+		router := mux.NewRouter().StrictSlash(true)
+		router.PathPrefix("/images/").Handler(http.StripPrefix("/images/", http.FileServer(http.Dir("images/"))))
+		router.HandleFunc("/", Index).Methods("GET")
+		router.HandleFunc("/api/view/{id}", Show).Methods("GET")
+		router.HandleFunc("/tag/{tag}", Index).Methods("GET")
+		router.HandleFunc("/api/edit/{id}", Edit).Methods("GET")
+		router.HandleFunc("/api/crass/{id}", Crass).Methods("GET")
+		router.HandleFunc("/api/pithy/{id}", Pithy).Methods("GET")
+		router.HandleFunc("/api/sort/{score}", Sort).Methods("GET")
+		router.HandleFunc("/api/nextjoke/{id}", NextJoke).Methods("GET")
+		router.HandleFunc("/api/line/{id}", JsonLine).Methods("GET")
+		router.HandleFunc("/api/edit", Posting).Methods("POST")
+		router.HandleFunc("/api/delimg/{id}", DeleteImage).Methods("GET")
+		router.HandleFunc("/logout", UserLogsOut).Methods("GET")
+		router.HandleFunc("/login", Login).Methods("GET")
+		router.HandleFunc("/login", UserLogsIn).Methods("POST")
+
+		http.Handle("/", router)
+		log.Fatal(http.ListenAndServe(port, router))
+	}
 }
