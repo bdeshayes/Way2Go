@@ -15,3 +15,5 @@ this utility also exists in node.js under doco.js
 
 **func substr(input string, start int, length int) string**  
 Go doesn't have substr so we make our own...
+
+doco.exe (go version compiled for windows) is under https://github.com/bdeshayes/Way2Go/releases assets
