@@ -17,6 +17,7 @@ That definitively beats the humongous node_modules folder that you have to bear 
 Go is a typed language - so if you come from PHP you will have to differentiate between strings and integers. You can't create http responses on the fly with heredoc strings and intersperse variables in the mix. Instead you are told to use templates. Templates can only take one argument but thankfully you can call several templates one after the other each with its own data.
 
 Go has its own idiosyncrasies - try to build some **JSON** data for instance - it is quite ugly but so straightforward in node/javascript (!)
+Node has gone thru some painful morphing to its current stage. Some remaining scars are **aync/await** and the fs-extras library and all its sync functions to testify that sometimes people like their code to be executed in the order it is written...
 
 [node documentation](node.md)
 
