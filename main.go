@@ -422,7 +422,6 @@ does posts sorted by crass or pithy scores
 */
 func Sort(w http.ResponseWriter, r *http.Request) {
 	db := dbConn()
-	rand.Seed(time.Now().UTC().UnixNano())
 
 	theAdvert := Advert{}
 	myAdverts := []Advert{}
@@ -506,34 +505,12 @@ func Sort(w http.ResponseWriter, r *http.Request) {
 		head.LoginTag = `<a href="/logout">LOGOUT</a>&nbsp; &nbsp; <a href="/api/edit/0"> NEW POST</a>`
 	}
 
-	/*if !CheckCredentials(r) {
-		rand.Seed(time.Now().UnixNano())
-		rand.Shuffle(len(res), func(i, j int) { res[i], res[j] = res[j], res[i] })
-
-		for k := range UsedAds {
-			delete(UsedAds, k)
-		}
-		for i = 0; i < len(res); i++ {
-			if (i % 2) == 0 {
-				res[i].Bgc = "#eeeecc"
-			} else {
-				res[i].Bgc = "#cceeee"
-			}
-			if (i % 3) == 0 {
-				choosen := myAdverts[AdGenerator(myAdverts)]
-				res[i].Advert = `<div onclick="fakead('/api/line/` + strconv.Itoa(choosen.id) + `')" style="cursor: pointer; border-style: dashed; font-family: arial; font-size: 120%; text-align: center;">` + choosen.msg + `</div><br />`
-			} else {
-				res[i].Advert = ""
-			}
-		}
-	} else {*/
 	for i = 0; i < len(res); i++ {
 		if (i % 2) == 0 {
 			res[i].Bgc = "#eeeecc"
 		} else {
 			res[i].Bgc = "#cceeee"
 		}
-		//}
 	}
 	tmpl.ExecuteTemplate(w, "Header", head)
 	tmpl.ExecuteTemplate(w, "Index", res)
