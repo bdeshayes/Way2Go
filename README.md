@@ -24,5 +24,5 @@ Node has gone thru some painful morphing to its current stage. Some remaining sc
 
 [go documentation](go.md)
 
-Way2Go.exe (go version compiled for windoes in under https://github.com/bdeshayes/Way2Go/releases assets
+Way2Go.exe (go version compiled for windows) in under https://github.com/bdeshayes/Way2Go/releases assets
 
